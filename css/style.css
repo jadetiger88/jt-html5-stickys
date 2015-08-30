@@ -45,7 +45,6 @@ button:hover {
 .edit {
 	position: absolute;
 	left: 	10;
-	right: 10;
 	top: 10;
 	overflow: auto;
 	height: 240px;

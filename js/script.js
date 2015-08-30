@@ -286,9 +286,10 @@ function loadNotes() {
 				}
 			}
 
-			// if (!result.rows.lenght) {
-			// 	newNote();
-			// }
+			if (!result.rows.length) {
+				createNote();
+			}
+
 		}, function(tx, error) {
 			alert("Failed to get notes: " + error.message );
 		});
@@ -305,7 +306,7 @@ function modifiedString (date) {
 			date.getSeconds());
 }
 
-function newNote() {
+function createNote() {
 	var note 	= new Note(); 
 	note.id 	= ++highestId; 
 	note.left 	= "50px"; 
