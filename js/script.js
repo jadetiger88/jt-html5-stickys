@@ -252,49 +252,66 @@ Note.prototype = {
 
 function loaded () {
 	db.transaction(function(tx) {
-		tx.executeSql("SELECT COUNT (*) FROM Stickys ", [], function(result) {
-			loadNotes();
-		}, function(tx, error) {
-			tx.executeSql("CREATE TABLE Stickys (id REAL UNIQUE, note TEXT, timestamp REAL, left TEXT, top TEXT, zindex REAL)", 
-				[], function(result) {
-					loadNotes();
-				}
-			);
-		});
+		tx.executeSql("SELECT COUNT (*) FROM Stickys ", 
+					   [], 
+					   loadedProcessNormal, 
+					   loadedProcessError);
 	});
 }
+
+function loadedProcessNormal (tx) {
+	tx.executeSql("SELECT COUNT (*) FROM Stickys ", [], function(result) {
+		loadNotes();
+	});	
+}
+
+function loadedProcessError (tx, error) {
+	tx.executeSql("CREATE TABLE Stickys (id REAL UNIQUE, note TEXT, timestamp REAL, left TEXT, top TEXT, zindex REAL)", 
+		[], function(result) {
+			loadNotes();
+		});
+}
+
 
 function loadNotes() {
 	db.transaction(function(tx) {
-		tx.executeSql("SELECT id, note, timestamp, left, top, zindex FROM Stickys", [], function(tx, result){
-			for (var i = 0; i < result.rows.length; i++) {
-				var row 		= result.rows.item(i);
-				var note 		= new Note();
-				note.id 		= row['id'];
-				note.text 		= row['note'];
-				note.timestamp 	= row['timestamp'];
-				note.left 		= row['left'];
-				note.top 		= row['top'];
-				note.zIndex 	= row['zindex'];
-
-				if (row['id'] > highestId) {
-					highestId = row['id'];
-				}
-
-				if (row['zindex'] > highestZ) {
-					highestZ = row['zindex'];
-				}
-			}
-
-			if (!result.rows.length) {
-				createNote();
-			}
-
-		}, function(tx, error) {
-			alert("Failed to get notes: " + error.message );
-		});
+		tx.executeSql("SELECT id, note, timestamp, left, top, zindex FROM Stickys", 
+			           [], 
+					   loadNoteProcessNormal, 
+				       loadNoteProcessError);
 	});
 }
+
+function loadNoteProcessNormal (tx, result) {
+	for (var i = 0; i < result.rows.length; i++) {
+		var row 		= result.rows.item(i);
+		var note 		= new Note();
+		note.id 		= row['id'];
+		note.text 		= row['note'];
+		note.timestamp 	= row['timestamp'];
+		note.left 		= row['left'];
+		note.top 		= row['top'];
+		note.zIndex 	= row['zindex'];
+
+		if (row['id'] > highestId) {
+			highestId = row['id'];
+		}
+
+		if (row['zindex'] > highestZ) {
+			highestZ = row['zindex'];
+		}
+	}
+
+	if (!result.rows.length) {
+		createNote();
+	}
+
+}
+
+function loadNoteProcessError(tx, error) {
+	alert("Failed to get notes: " + error.message );
+}
+
 
 function modifiedString (date) {
 	return("Stickys last modified on " 				+ 
